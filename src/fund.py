@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 from bs4 import BeautifulSoup
 import requests
-
+from constants import STOCK_ID
 
 def get_html_content_from_file(file='sbi.html'):
     with open(file, 'r', encoding='utf-8') as file:
@@ -22,7 +22,7 @@ def get_html_content_from_url(url='https://trendlyne.com/portfolio/bulk-block-de
     return html_content
 
 
-def get_investor_stocks(html_content,day):
+def get_investor_stocks(html_content, historic_no_of_day):
     soup = BeautifulSoup(html_content, 'html.parser')
     table = soup.find('table', {'id': 'bbdealTable'})
     df = pd.read_html(str(table))[0]
@@ -39,10 +39,10 @@ def get_investor_stocks(html_content,day):
             stock_ids.append(stock_id)
         else:
             print(f"Row {index}: No superstar data found.")
-    df['stock_ids'] = pd.DataFrame(stock_ids)
+    df[STOCK_ID] = pd.DataFrame(stock_ids)
     df['Date'] = pd.to_datetime(df['Date'], format='%d %b %Y')
     current_date = pd.to_datetime(datetime.now().date())
-    one_month_ago = current_date - pd.DateOffset(days=day)
+    one_month_ago = current_date - pd.DateOffset(days=historic_no_of_day)
     df = df[df['Date'] > one_month_ago]
     if df.empty:
         return []
